@@ -3,10 +3,13 @@ package com.liam.game.gamestate;
 import java.awt.Graphics;
 
 import com.liam.game.entities.Player;
+import com.liam.game.mapping.Map;
+import com.liam.game.objects.Block;
 
 public class Level1State extends GameState {
 
 	private Player player;
+	private Map map;
 	
 	public Level1State(GameStateManager gsm) {
 		super(gsm);
@@ -14,14 +17,19 @@ public class Level1State extends GameState {
 
 	public void init() {
 		player = new Player(30, 30);
+		map = new Map("/map1.map");
+		
+		xOffset = -200;
+		yOffset = -400;
 	}
 
 	public void tick() {
-		player.tick();
+		player.tick(map.getBlocks());
 	}
 
 	public void draw(Graphics g) {
 		player.draw(g);
+		map.draw(g);
 	}
 
 	public void keyPressed(int k) {
