@@ -1,13 +1,17 @@
-package com.liam.game.main;
+package com.liam.game.gamestate;
 
 import java.awt.Graphics;
 
 public abstract class GameState {
 
 	protected GameStateManager gsm;
+	public static double xOffset, yOffset;
 	
-	protected GameState(GameStateManager gsm) {
+	public GameState(GameStateManager gsm) {
 		this.gsm = gsm;
+		xOffset = 0;
+		yOffset = 0;
+		init();
 	}
 	
 	public abstract void init();

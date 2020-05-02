@@ -7,8 +7,10 @@ import java.awt.event.KeyListener;
 
 import javax.swing.JPanel;
 
+import com.liam.game.gamestate.GameStateManager;
+
 public class GamePanel extends JPanel implements Runnable, KeyListener{
-	private static final long serialVersionUID = 11;
+	private static final long serialVersionUID = 1L;
 	
 	public static final int WIDTH = 900;
 	public static final int HEIGHT = 550;
@@ -23,6 +25,8 @@ public class GamePanel extends JPanel implements Runnable, KeyListener{
 	// constructor
 	public GamePanel() {
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
+		addKeyListener(this);
+		setFocusable(true);
 		start();
 	}
 	

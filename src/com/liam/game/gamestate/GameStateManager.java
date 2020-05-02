@@ -1,14 +1,15 @@
-package com.liam.game.main;
+package com.liam.game.gamestate;
 
 import java.awt.Graphics;
 import java.util.Stack;
 
 public class GameStateManager {
 
-	private Stack<GameState> states;
+	public Stack<GameState> states;
 	
 	public GameStateManager() {
 		states = new Stack<GameState>();
+		states.push(new MenuState(this));
 	}
 	
 	public void tick() {
