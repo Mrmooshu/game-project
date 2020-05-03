@@ -5,6 +5,7 @@ import java.awt.Graphics;
 import java.awt.Rectangle;
 
 import com.liam.game.gamestate.GameState;
+import com.liam.game.resources.Images;
 
 public class Block extends Rectangle {
 	private static final long serialVersionUID = 1l;
@@ -23,8 +24,16 @@ public class Block extends Rectangle {
 	public void draw(Graphics g) {
 		g.setColor(Color.BLACK);
 		if (id != 0) {
-			g.fillRect(x - (int)GameState.xOffset, y - (int)GameState.yOffset, width, height);
-
+			g.drawImage(Images.blocks[id -1], x - (int)GameState.xOffset, y - (int)GameState.yOffset, width, height, null);
 		}
+	}
+	
+	//getters and setters
+	public void setID(int id) {
+		this.id =id;
+	}
+	
+	public int getID() {
+		return id;
 	}
 }

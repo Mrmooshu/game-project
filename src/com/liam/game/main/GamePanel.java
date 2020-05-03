@@ -8,6 +8,7 @@ import java.awt.event.KeyListener;
 import javax.swing.JPanel;
 
 import com.liam.game.gamestate.GameStateManager;
+import com.liam.game.resources.Images;
 
 public class GamePanel extends JPanel implements Runnable, KeyListener{
 	private static final long serialVersionUID = 1L;
@@ -27,6 +28,7 @@ public class GamePanel extends JPanel implements Runnable, KeyListener{
 		setPreferredSize(new Dimension(WIDTH, HEIGHT));
 		addKeyListener(this);
 		setFocusable(true);
+		new Images();
 		start();
 	}
 	

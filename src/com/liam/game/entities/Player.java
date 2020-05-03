@@ -4,10 +4,12 @@ import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 
 import com.liam.game.gamestate.GameState;
 import com.liam.game.main.GamePanel;
 import com.liam.game.objects.Block;
+import com.liam.game.objects.MovingBlock;
 import com.liam.game.physics.Collision;
 
 public class Player {
@@ -34,45 +36,87 @@ public class Player {
 		this.height = height;
 	}
 	
-	public void tick(Block[][] b) {
+	public void tick(Block[][] blocks, ArrayList<MovingBlock> movingBlocks) {
 		
 		int intX = (int)x;
 		int intY = (int)y;
 		
-		
-		for (int i = 0; i < b.length; i++) {
-			for (int j = 0; j < b[0].length; j++) {
-				//right
-				if (Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset, intY + (int)GameState.yOffset + 2), b[i][j]) 
-						|| Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset, intY + height + (int)GameState.yOffset - 1), b[i][j])) {
-					right = false;
-				}
-				//left
-				if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset - 1, intY + (int)GameState.yOffset + 2), b[i][j]) 
-						|| Collision.playerBlock(new Point(intX + (int)GameState.xOffset - 1, intY + height + (int)GameState.yOffset - 1), b[i][j])) {
-					left = false;
-				}
-				//top
-				if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset + 1, intY + (int)GameState.yOffset), b[i][j]) 
-						|| Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset - 1, intY + (int)GameState.yOffset), b[i][j])) {
-					jumping = false;
-					falling = true;
-				}
-				//bottom
-				if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset +2, intY + height + (int)GameState.yOffset + 1), b[i][j]) 
-						|| Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset - 1, intY + height + (int)GameState.yOffset + 1), b[i][j])) {
-					y = b[i][j].getY() - height - GameState.yOffset;
-					falling = false;
-					topCollision = true;
-				}
-				else {
-					if (!topCollision && !jumping) {
+		//player block collision check
+		for (int i = 0; i < blocks.length; i++) {
+			for (int j = 0; j < blocks[0].length; j++) {
+				// check if block has collision
+				if (blocks[i][j].getID() != 0) {
+					//right
+					if (Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset, intY + (int)GameState.yOffset + 2), blocks[i][j]) 
+							|| Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset, intY + height + (int)GameState.yOffset - 1), blocks[i][j])) {
+						right = false;
+					}
+					//left
+					if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset - 1, intY + (int)GameState.yOffset + 2), blocks[i][j]) 
+							|| Collision.playerBlock(new Point(intX + (int)GameState.xOffset - 1, intY + height + (int)GameState.yOffset - 1), blocks[i][j])) {
+						left = false;
+					}
+					//top
+					if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset + 1, intY + (int)GameState.yOffset), blocks[i][j]) 
+							|| Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset - 2, intY + (int)GameState.yOffset), blocks[i][j])) {
+						jumping = false;
 						falling = true;
+					}
+					//bottom
+					if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset +2, intY + height + (int)GameState.yOffset + 1), blocks[i][j]) 
+							|| Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset - 2, intY + height + (int)GameState.yOffset + 1), blocks[i][j])) {
+						y = blocks[i][j].getY() - height - GameState.yOffset;
+						falling = false;
+						topCollision = true;
+					}
+					else {
+						if (!topCollision && !jumping) {
+							falling = true;
+						}
 					}
 				}
 			}
-
 		}
+		//player moving block collision check
+		for (int i = 0; i < movingBlocks.size(); i++) {
+			if (movingBlocks.get(i).getID() != 0) {
+				if (movingBlocks.get(i).getID() != 0) {
+					//right
+					if (Collision.playerMovingBlock(new Point(intX + width + (int)GameState.xOffset, intY + (int)GameState.yOffset + 2), movingBlocks.get(i)) 
+							|| Collision.playerMovingBlock(new Point(intX + width + (int)GameState.xOffset, intY + height + (int)GameState.yOffset - 1), movingBlocks.get(i))) {
+						right = false;
+					}
+					//left
+					if (Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset - 1, intY + (int)GameState.yOffset + 2), movingBlocks.get(i)) 
+							|| Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset - 1, intY + height + (int)GameState.yOffset - 1), movingBlocks.get(i))) {
+						left = false;
+					}
+					//top
+					if (Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset + 1, intY + (int)GameState.yOffset), movingBlocks.get(i)) 
+							|| Collision.playerMovingBlock(new Point(intX + width + (int)GameState.xOffset - 2, intY + (int)GameState.yOffset), movingBlocks.get(i))) {
+						jumping = false;
+						falling = true;
+					}
+					//bottom
+					if (Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset +2, intY + height + (int)GameState.yOffset + 1), movingBlocks.get(i)) 
+							|| Collision.playerMovingBlock(new Point(intX + width + (int)GameState.xOffset - 2, intY + height + (int)GameState.yOffset + 1), movingBlocks.get(i))) {
+						y = movingBlocks.get(i).getY() - height - GameState.yOffset;
+						falling = false;
+						topCollision = true;
+						
+						GameState.xOffset += movingBlocks.get(i).getMove();
+					}
+					else {
+						if (!topCollision && !jumping) {
+							falling = true;
+						}
+					}
+				}
+			}
+		}
+		
+		
+		
 		topCollision = false;
 		
 		if (right) GameState.xOffset += moveSpeed;
