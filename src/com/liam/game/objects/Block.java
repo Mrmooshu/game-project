@@ -8,9 +8,9 @@ import com.liam.game.gamestate.GameState;
 import com.liam.game.resources.Images;
 
 public class Block extends Rectangle {
-	private static final long serialVersionUID = 1l;
+	private static final long serialVersionUID = 1L;
 
-	public static final int blockSize = 64;
+	public static final int blockSize = 16;
 	private int id;
 	
 	public Block(int x, int y, int id) {
@@ -22,7 +22,6 @@ public class Block extends Rectangle {
 	}
 	
 	public void draw(Graphics g) {
-		g.setColor(Color.BLACK);
 		if (id != 0) {
 			g.drawImage(Images.blocks[id -1], x - (int)GameState.xOffset, y - (int)GameState.yOffset, width, height, null);
 		}
