@@ -23,7 +23,7 @@ public class Player {
 	private boolean crouching = false;
 	//bounds
 	private double x, y;
-	private int width, height;
+	protected static int width, height;
 	//move speed
 	private double moveSpeed = 2.5;
 	private double runSpeed = 4.5;
@@ -96,7 +96,7 @@ public class Player {
 						}
 						// collision correction right
 						if (Collision.playerBlock(new Point(intX + width + (int)GameState.xOffset - 1, intY + k + (int)GameState.yOffset), blocks[i][j])){
-							GameState.xOffset -= 1;
+							GameState.xOffset -= .1;
 						}
 						//left collision
 						if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset, intY + k + (int)GameState.yOffset), blocks[i][j])) {
@@ -108,7 +108,7 @@ public class Player {
 						}
 						// collision correction left
 						if (Collision.playerBlock(new Point(intX + (int)GameState.xOffset + 1, intY + k + (int)GameState.yOffset), blocks[i][j])) {
-							GameState.xOffset += 1;
+							GameState.xOffset += .1;
 						}
 					}
 					// top and bottom
@@ -120,17 +120,16 @@ public class Player {
 						}
 						// collision correction top
 						if (Collision.playerBlock(new Point(intX + k + (int)GameState.xOffset + 1, intY + (int)GameState.yOffset - 1), blocks[i][j])) {
-							GameState.yOffset += 1;
+							GameState.yOffset += .1;
 						}
 						//bottom collision
 						if (Collision.playerBlock(new Point(intX + k + (int)GameState.xOffset + 1, intY + height + (int)GameState.yOffset + 1), blocks[i][j])) {
-							y = blocks[i][j].getY() - height - GameState.yOffset;
 							falling = false;
 							topCollision = true;
 						}
 						// collision correction bottom
 						if (Collision.playerBlock(new Point(intX + k + (int)GameState.xOffset + 1, intY + height + (int)GameState.yOffset), blocks[i][j])) {
-							GameState.yOffset -= 1;
+							GameState.yOffset -= .1;
 						}
 					}
 					// fall check
@@ -165,7 +164,6 @@ public class Player {
 					//bottom
 					if (Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset +2, intY + height + (int)GameState.yOffset + 1), movingBlocks.get(i)) 
 							|| Collision.playerMovingBlock(new Point(intX + width + (int)GameState.xOffset - 2, intY + height + (int)GameState.yOffset + 1), movingBlocks.get(i))) {
-						y = movingBlocks.get(i).getY() - height - GameState.yOffset;
 						falling = false;
 						topCollision = true;
 						
@@ -194,6 +192,7 @@ public class Player {
 		if (!stopMovement  && dashFrameLeft == 1) {
 			xMomentum = -10;
 		}
+		//friction
 		if (xMomentum > 0) {
 			xMomentum -= .2;
 		}
@@ -207,14 +206,18 @@ public class Player {
 		
 		topCollision = false;
 		
-		GameState.xOffset += xMomentum / 2;
-		GameState.yOffset += yMomentum / 2;
+		if (!stopMovement) {
+			GameState.xOffset += xMomentum / 2;
+			GameState.yOffset += yMomentum / 2;
+		}
+
 		
 		if (right && rightKeyDown && !airDashing && !crouching) GameState.xOffset += moveSpeed;
 		if (left && leftKeyDown && !airDashing && !crouching) GameState.xOffset -= moveSpeed;
 		if (jumping) {
 			GameState.yOffset -= currentJumpSpeed;
 			currentJumpSpeed -= .1;
+			crouching = false;
 			if (currentJumpSpeed <= 0) {
 				currentJumpSpeed = jumpSpeed;
 				jumping = false;
@@ -224,6 +227,7 @@ public class Player {
 		if (wallJumping) {
 			GameState.yOffset -= currentJumpSpeed * 2;
 			currentJumpSpeed -= .1;
+			crouching = false;
 			if (currentJumpSpeed <= 0) {
 				currentJumpSpeed = jumpSpeed;
 				wallJumping = false;
@@ -232,6 +236,7 @@ public class Player {
 		}
 		if (falling && !airDashing) {
 			GameState.yOffset += currentFallSpeed;
+			crouching = false;
 			if (currentFallSpeed < maxFallSpeed) {
 				currentFallSpeed += .1;
 			}

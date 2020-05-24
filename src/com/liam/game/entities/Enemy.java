@@ -1,18 +1,18 @@
 package com.liam.game.entities;
 
 import java.awt.Graphics;
+import java.util.ArrayList;
+
+import com.liam.game.objects.Block;
+import com.liam.game.objects.MovingBlock;
 
 public abstract class Enemy {
-	private double x, y;
-	private int width, height;
+	protected static int enemyCount;
 	
-	public Enemy(int width, int height, int xSpawn, int ySpawn) {
-		x = xSpawn;
-		y = ySpawn;
-		this.width = width;
-		this.height = height;
+	public Enemy() {
+		enemyCount += 1;
 	}
 	
-	public abstract void tick();
+	public abstract void tick(Block[][] blocks, ArrayList<MovingBlock> movingBlocks);
 	public abstract void draw(Graphics g);
 }
