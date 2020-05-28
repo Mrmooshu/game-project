@@ -3,6 +3,7 @@ package com.liam.game.physics;
 import java.awt.Point;
 import java.awt.Rectangle;
 
+import com.liam.game.entities.HitBox;
 import com.liam.game.objects.Block;
 import com.liam.game.objects.MovingBlock;
 
@@ -21,6 +22,10 @@ public class Collision {
 	}
 	
 	public static boolean playerEnemy(Rectangle a, Rectangle b) {
+		return a.intersects(b);
+	}
+	
+	public static boolean hitBoxEnemy(HitBox a, Rectangle b) {
 		return a.intersects(b);
 	}
 

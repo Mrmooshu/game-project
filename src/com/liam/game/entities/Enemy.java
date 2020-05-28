@@ -1,5 +1,6 @@
 package com.liam.game.entities;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -13,6 +14,13 @@ import com.liam.game.physics.Collision;
 import com.liam.game.resources.Images;
 
 public class Enemy{
+	
+	private HitBoxManager hitBoxManager;
+	private HurtBoxManager hurtBoxManager;
+		
+	//stats
+	private int health;
+	boolean die = false;
 	
 	//movement
 	private boolean right = false, left = false, jumping = false, falling = false;
@@ -38,15 +46,18 @@ public class Enemy{
 	//cooldown
 	private int jumpCooldown;
 	
-	public Enemy(int width, int height, double xSpawn, double ySpawn) {
+	public Enemy(int width, int height, double xSpawn, double ySpawn, int health) {
 		this.width = width;
 		this.height = height;
 		this.x = xSpawn;
 		this.y = ySpawn;
+		this.health = health;
+		hurtBoxManager = new HurtBoxManager();
+		hurtBoxManager.addHurtBox(new HurtBox((int)x + 5 - (int)GameState.xOffset, (int)y + 5 - (int)GameState.yOffset, width - 10, height - 10));
 	}
 	
 	public void tick(Block[][] blocks, ArrayList<MovingBlock> movingBlocks) {
-				
+		
 		int intX = (int)x;
 		int intY = (int)y;
 		
@@ -110,6 +121,16 @@ public class Enemy{
 		if (xMomentum < 0) {
 			xMomentum += .2;
 		}
+		if (yMomentum > 0) {
+			yMomentum -= .2;
+		}
+		if (yMomentum < 0) {
+			yMomentum += .2;
+		}
+		if (topCollision) {
+			xMomentum *= .9;
+			yMomentum *= .7;
+		}
 		if (!stopMovement) {
 			x += xMomentum / 2;
 			y += yMomentum / 2;
@@ -168,15 +189,36 @@ public class Enemy{
 		stopMovement = false;
 		topCollision = false;
 		
+		if (health <= 0) {
+			die = true;
+		}
+		
 	}
 	public void draw(Graphics g) {
-		g.drawImage(Images.blocks[0], (int)x - (int)GameState.xOffset, (int)y - (int)GameState.yOffset, width, height, null);
+		g.drawImage(Images.blocks[1], (int)x - (int)GameState.xOffset, (int)y - (int)GameState.yOffset, width, height, null);
+		
+		//hurtboxes
+		for (int i = 0; i < hurtBoxManager.getHurtBoxes().size(); i++) {
+			if (hurtBoxManager.getHurtBoxes().get(i).getActive()) {
+				hurtBoxManager.getHurtBoxes().get(i).setBounds((int)x + 5 - (int)GameState.xOffset, (int)y + 5 - (int)GameState.yOffset, width - 10, height - 10);
+				hurtBoxManager.getHurtBoxes().get(i).draw(g);
+			}
+		}
 	}
 	
-	public Rectangle getRectangle() {
-		return new Rectangle((int)x, (int)y, width, height);
+	public HurtBoxManager getHurtBoxManager() {
+		return hurtBoxManager;
 	}
 	public double getX() {
 		return x;
+	}
+	public void setXMomentum(double x) {
+		this.xMomentum = x;
+	}
+	public void setYMomentum(double y) {
+		this.yMomentum = y;
+	}
+	public boolean getDie() {
+		return die;
 	}
 }

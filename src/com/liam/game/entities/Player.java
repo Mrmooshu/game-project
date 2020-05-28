@@ -6,6 +6,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import com.liam.game.gamestate.GameState;
 import com.liam.game.main.GamePanel;
@@ -19,9 +20,11 @@ public class Player {
 	//stats
 	private int health = 100;
 	
+	private HitBoxManager hitBoxManager;
+	private HurtBoxManager hurtBoxManager;
 	
 	//movement booleans
-	private boolean right = false, left = false, jumping = false, wallJumping = false, falling = false;
+	private boolean right = false, left = false, jumping = false, wallJumping = false, wallJumpingRight, wallJumpingLeft, falling = false;
 	private boolean topCollision = false;
 	private boolean wallSlidingRight = false, wallSlidingLeft = false;
 	private boolean airDashing = false;
@@ -29,12 +32,12 @@ public class Player {
 	private boolean runningRight = false, runningLeft = false;
 	//bounds
 	private double x, y;
-	protected static int width, height;
+	protected int width, height;
 	//move speed
 	private double moveSpeed = 2;
 	private double maxRunSpeed = 5;
-	private double dashFrameRight = 0;
-	private double dashFrameLeft = 0;
+	private double airDashFrameRight = 0;
+	private double airDashFrameLeft = 0;
 	private double xMomentum = 0;
 	private double yMomentum = 0;
 	//jump speed
@@ -46,8 +49,8 @@ public class Player {
 	//input
 	private boolean rightKeyDown = false;
 	private boolean leftKeyDown = false;
-	private int rightDashWindow = 0;
-	private int leftDashWindow = 0;
+	private int rightAirDashWindow = 0;
+	private int leftAirDashWindow = 0;
 	private boolean faceRight = true;
 	private boolean faceLeft = false;
 	private boolean stopMovement = false;
@@ -67,27 +70,22 @@ public class Player {
 		y = GamePanel.HEIGHT / 2;
 		this.width = width;
 		this.height = height;
+		hitBoxManager = new HitBoxManager();
 	}
 	
-	public void tick(Block[][] blocks, ArrayList<MovingBlock> movingBlocks, ArrayList<Enemy>enemies) {
+	public void tick(Block[][] blocks, ArrayList<MovingBlock> movingBlocks, LinkedList<Enemy>enemies) {
 		
 		int intX = (int)x;
 		int intY = (int)y;
 		
 		wallSlidingRight = false;
 		wallSlidingLeft = false;
-		if (rightDashWindow > 0) {
-			rightDashWindow--;
+		if (rightAirDashWindow > 0) {
+			rightAirDashWindow--;
 			}
-		if (leftDashWindow > 0) {
-			leftDashWindow--;
+		if (leftAirDashWindow > 0) {
+			leftAirDashWindow--;
 			}
-		if (dashFrameRight > 0) {
-			dashFrameRight--;
-		}
-		if (dashFrameLeft > 0) {
-			dashFrameLeft--;
-		}
 		if (airDashCooldown > 0) {
 			airDashCooldown--;
 		}
@@ -169,7 +167,7 @@ public class Player {
 					if (Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset - 1, intY + (int)GameState.yOffset + 2), movingBlocks.get(i)) 
 							|| Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset - 1, intY + height + (int)GameState.yOffset - 1), movingBlocks.get(i))) {
 						left = false;
-						dashFrameLeft = 0;
+						airDashFrameLeft = 0;
 					}
 					//top
 					if (Collision.playerMovingBlock(new Point(intX + (int)GameState.xOffset + 1, intY + (int)GameState.yOffset), movingBlocks.get(i)) 
@@ -195,37 +193,105 @@ public class Player {
 		}
 		
 		for (int i = 0; i < enemies.size(); i++) {
-			if (!invunerable && Collision.playerEnemy(new Rectangle(intX + (int)GameState.xOffset, intY + (int)GameState.yOffset, width, height), enemies.get(i).getRectangle())) {
-				health -= 1;
-				invunerableFrames = 30;
-				invunerable = true;
-				if (GameState.xOffset + GamePanel.WIDTH / 2 >=  enemies.get(i).getX()) {
-					xMomentum += 10;
-					yMomentum -= 10;
+			for (int k = 0; k < enemies.get(i).getHurtBoxManager().getHurtBoxes().size(); k++) {
+				if (!invunerable && Collision.playerEnemy(new Rectangle(intX, intY, width, height), enemies.get(i).getHurtBoxManager().getHurtBoxes().get(k).getRectangle())) {
+					health -= 5;
+					invunerableFrames = 30;
+					invunerable = true;
+					if (GameState.xOffset + GamePanel.WIDTH / 2 >=  enemies.get(i).getX()) {
+						xMomentum = 8;
+						yMomentum = -8;
+						currentFallSpeed = 0.1;
+						enemies.get(i).setXMomentum(-8);
+						enemies.get(i).setYMomentum(+8);
+					}
+					if (GameState.xOffset + GamePanel.WIDTH / 2 <=  enemies.get(i).getX()) {
+						xMomentum = -8;
+						yMomentum = -8;
+						currentFallSpeed = 0.1;
+						enemies.get(i).setXMomentum(8);
+						enemies.get(i).setYMomentum(+8);
+					}
 				}
-				if (GameState.xOffset + GamePanel.WIDTH / 2 <=  enemies.get(i).getX()) {
-					xMomentum -= 10;
-					yMomentum -= 10;
+				
+		}
+
+			for (int j = 0; j < hitBoxManager.getHitBoxes().size(); j++) {
+				for (int k = 0; k < enemies.get(i).getHurtBoxManager().getHurtBoxes().size(); k++) {
+				if (Collision.hitBoxEnemy(hitBoxManager.getHitBoxes().get(j), enemies.get(i).getHurtBoxManager().getHurtBoxes().get(k).getRectangle())) {
+					if (GameState.xOffset + GamePanel.WIDTH / 2 >=  enemies.get(i).getX()) {
+						enemies.get(i).setXMomentum(- hitBoxManager.getHitBoxes().get(j).getXKnockback());
+						enemies.get(i).setYMomentum(- hitBoxManager.getHitBoxes().get(j).getYKnockback());
+					}
+					if (GameState.xOffset + GamePanel.WIDTH / 2 <=  enemies.get(i).getX()) {
+						enemies.get(i).setXMomentum(hitBoxManager.getHitBoxes().get(j).getXKnockback());
+						enemies.get(i).setYMomentum(- hitBoxManager.getHitBoxes().get(j).getYKnockback());
+					}
+
 				}
+			}
 			}
 		}
 		
 		
-		System.out.println(invunerableFrames);
-		
-		if (!stopMovement && dashFrameRight > 0) {
-			xMomentum += 2;
+		//attacks
+		if (attackA && faceRight && !acting) {
+			attackA = false;
+			int activeFrames = 20;
+			int xKnockback = 10;
+			int yKnockback = 5;
+			int width = 50;
+			int height = 20;
+			hitBoxManager.addHitBox(new HitBox(intX + width / 2, intY + 15, width, height, activeFrames, xKnockback, yKnockback));
 		}
-		else if (!stopMovement && dashFrameLeft > 0) {
+		else if (attackA && faceLeft && !acting) {
+			attackA = false;
+			int activeFrames = 20;
+			int xKnockback = 10;
+			int yKnockback = 5;
+			int width = 50;
+			int height = 20;
+			hitBoxManager.addHitBox(new HitBox(intX - width / 2 - this.width / 2, intY + 15, width, height, activeFrames, xKnockback, yKnockback));
+		}
+		else if (attackB && faceRight && !acting) {
+			attackB = false;
+			int activeFrames = 20;
+			int xKnockback = 10;
+			int yKnockback = 5;
+			hitBoxManager.addHitBox(new HitBox(intX + 20, intY + 22, 50, 10, activeFrames, xKnockback, yKnockback));
+		}
+		else if (attackB && faceLeft && !acting) {
+			attackB = false;
+			int activeFrames = 20;
+			int xKnockback = 10;
+			int yKnockback = 5;
+			hitBoxManager.addHitBox(new HitBox(intX - 20, intY + 22, 50, 10, activeFrames, xKnockback, yKnockback));
+		}
+		
+		
+		if (!stopMovement && airDashFrameRight > 0) {
+			acting = true;
+			xMomentum += 2;
+			airDashFrameRight--;
+			if (airDashFrameRight == 0) {
+				acting = false;
+			}
+		}
+		else if (!stopMovement && airDashFrameLeft > 0) {
+			acting = true;
 			xMomentum -= 2;
+			airDashFrameLeft--;
+			if (airDashFrameLeft == 0) {
+				acting = false;
+			}
 		}
 		else {
 			airDashing = false;
 		}
-		if (!stopMovement  && dashFrameRight == 1) {
+		if (!stopMovement  && airDashFrameRight == 1) {
 			xMomentum = 10;
 		}
-		if (!stopMovement  && dashFrameLeft == 1) {
+		if (!stopMovement  && airDashFrameLeft == 1) {
 			xMomentum = -10;
 		}
 		if (runningRight || runningLeft) {
@@ -259,8 +325,8 @@ public class Player {
 		}
 
 		
-		if (right && rightKeyDown && !airDashing && !crouching) GameState.xOffset += moveSpeed;
-		if (left && leftKeyDown && !airDashing && !crouching) GameState.xOffset -= moveSpeed;
+		if (right && rightKeyDown && !airDashing && !crouching && !wallJumping && !acting) GameState.xOffset += moveSpeed;
+		if (left && leftKeyDown && !airDashing && !crouching && !wallJumping && !acting) GameState.xOffset -= moveSpeed;
 		if (jumping) {
 			GameState.yOffset -= currentJumpSpeed;
 			currentJumpSpeed -= .1;
@@ -277,10 +343,21 @@ public class Player {
 			GameState.yOffset -= currentJumpSpeed * 2;
 			currentJumpSpeed -= .1;
 			crouching = false;
+			acting = true;
+			falling = false;
+			if (wallJumpingRight) {
+				GameState.xOffset -= currentJumpSpeed * 1.2;
+			}
+			if (wallJumpingLeft) {
+				GameState.xOffset += currentJumpSpeed * 1.2;
+			}
 			if (currentJumpSpeed <= 0) {
 				currentJumpSpeed = jumpSpeed;
 				wallJumping = false;
+				wallJumpingRight =false;
+				wallJumpingLeft = false;
 				falling = true;
+				acting = false;
 			}
 		}
 		if (falling && !airDashing) {
@@ -310,30 +387,34 @@ public class Player {
 		stopMovement = false;
 		x = GamePanel.WIDTH / 2;
 		y = GamePanel.HEIGHT / 2;
-
-		if (aF > 0) {
-			aF--;
-		}
-		else {
-			acting = false;
-			attackA = false;
-			attackB = false;
-		}
 		
 		if (invunerableFrames > 0) {
 			acting = true;
 			invunerableFrames--;
+			if (invunerableFrames == 0) {
+				acting = false;
+			}
 		}
 		else {
 			invunerable = false;
 		}
-		
 	}
 	
 	
 	
 	public void draw(Graphics g) {
-		g.setColor(Color.RED);
+		if (invunerable) {
+			g.setColor(Color.BLUE);
+		}
+	    else if (acting) {
+			g.setColor(Color.GREEN);
+		}
+	    else if (runningLeft || runningRight) {
+	    	g.setColor(Color.ORANGE);
+	    }
+		else {
+			g.setColor(Color.RED);
+		}
 		//movements
 		if (faceRight && !falling && !airDashing && !crouching) {
 			g.fillRect((int)x, (int)y, width, height);
@@ -355,22 +436,17 @@ public class Player {
 			g.fillRect((int)x, (int)y + 15, width, height - 15);
 		}
 		
-		//attacks
-		if (attackA && faceRight) {
-			g.setColor(Color.GREEN);
-			g.fillRect((int)x + 20, (int)y + 15, 30, 10);
-		}
-		if (attackA && faceLeft) {
-			g.setColor(Color.GREEN);
-			g.fillRect((int)x + -20, (int)y + 15, 30, 10);
-		}
-		if (attackB && faceRight) {
-			g.setColor(Color.GREEN);
-			g.fillRect((int)x + 20, (int)y + 22, 30, 10);
-		}
-		if (attackB && faceLeft) {
-			g.setColor(Color.GREEN);
-			g.fillRect((int)x + -20, (int)y + 22, 30, 10);
+		
+		//hitbox
+		for (int i = 0; i < hitBoxManager.getHitBoxes().size(); i++) {
+			if (hitBoxManager.getHitBoxes().get(i).getActiveFrames() > 0) {
+				hitBoxManager.getHitBoxes().get(i).draw(g);
+				acting = true;
+			}
+			else {
+				hitBoxManager.getHitBoxes().remove(i);
+				acting = false;
+			}
 		}
 	}
 	
@@ -381,87 +457,73 @@ public class Player {
 	}
 	
 	public void keyPressed(int k) {
-		if (k == KeyEvent.VK_D && !crouching) {
+		if (k == KeyEvent.VK_D) {
 			right = true;
 			if (!rightKeyDown) {
 				rightKeyDown = true;
 				faceRight = true;
 				faceLeft = false;
-				if (rightDashWindow > 0 && airDashCooldown == 0 && jumping ||rightDashWindow > 0 && airDashCooldown == 0 && falling) {
+				if (rightAirDashWindow > 0 && airDashCooldown == 0 && jumping ||rightAirDashWindow > 0 && airDashCooldown == 0 && falling) {
 					//airdash
 					airDashing = true;
 					jumping = false;
-					dashFrameRight = 10;
+					airDashFrameRight = 10;
 					airDashCooldown = 60;
 				}
-				else if (rightDashWindow > 0) {
+				else if (rightAirDashWindow > 0 && !falling && !jumping) {
 					//run
 					runningRight = true;
 				}
 				else {
-					rightDashWindow = 30;
+					rightAirDashWindow = 30;
 				}
 				
 			}
 
 		}
-		if (k == KeyEvent.VK_A && !crouching) {
+		if (k == KeyEvent.VK_A) {
 			left = true;
 			if (!leftKeyDown) {
 				leftKeyDown = true;
 				faceLeft = true;
 				faceRight = false;
-				if (leftDashWindow > 0 && airDashCooldown == 0 && jumping || leftDashWindow > 0 && airDashCooldown == 0 && falling) {
+				if (leftAirDashWindow > 0 && airDashCooldown == 0 && jumping || leftAirDashWindow > 0 && airDashCooldown == 0 && falling) {
 					//airdash
 					airDashing = true;
 					jumping = false;
-					dashFrameLeft = 10;
+					airDashFrameLeft = 10;
 					airDashCooldown = 60;
 				}
-				else if (leftDashWindow > 0) {
+				else if (leftAirDashWindow > 0 && !falling && !jumping) {
 					//run
 					runningLeft = true;
 				}
 				else {
-					leftDashWindow = 30;
+					leftAirDashWindow = 30;
 				}
 			}
 		}
-		if (k == KeyEvent.VK_SPACE && !jumping && !falling) {
+		if (k == KeyEvent.VK_SPACE && !jumping && !falling && !wallJumping) {
 			jumping = true;
 		}
 		if (k == KeyEvent.VK_SPACE && wallSlidingRight && falling && wallJumpCooldown == 0) {
 			wallJumping = true;
-			wallJumpCooldown = 100;
-			falling = false;
-			xMomentum -= 6;
-			currentFallSpeed = 0.1;
-			GameState.xOffset -= 0.1;
+			wallJumpingRight = true;
+			wallJumpCooldown = 20;
 		}
 		if (k == KeyEvent.VK_SPACE && wallSlidingLeft && falling && wallJumpCooldown == 0) {
 			wallJumping = true;
-			wallJumpCooldown = 100;
-			falling = false;
-			xMomentum += 6;
-			currentFallSpeed = 0.1;
-			GameState.xOffset += 0.1;
+			wallJumpingLeft = true;
+			wallJumpCooldown = 20;
 		}
 		if (k == KeyEvent.VK_S && !jumping && !falling) {
 			crouching = true;
 		}
 		if (k == KeyEvent.VK_G && !acting && !jumping && !falling && !crouching) {
-			aF = 10;
-			if (aF > 0) {
-				acting = true;
-				attackA = true;
-			}
+			attackA = true;
 		}
 		if (k == KeyEvent.VK_G && !acting && !jumping && !falling && crouching) {
-			aF = 10;
-			if (aF > 0) {
-				acting = true;
-				attackB = true;
-			}
+			attackB = true;
 		}
 	}
 
