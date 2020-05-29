@@ -10,7 +10,7 @@ import com.liam.game.resources.Images;
 public class Block extends Rectangle {
 	private static final long serialVersionUID = 1L;
 
-	public static final int blockSize = 4;
+	public static final int blockSize = 8;
 	private int id;
 	
 	public Block(int x, int y, int id) {

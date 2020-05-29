@@ -13,6 +13,10 @@ public class Inventory {
 		items = new LinkedList<Item>();
 	}
 	
+	
+	public LinkedList<Item> getItems(){
+		return items;
+	}
 	public void addItem(Item item) {
 		items.add(item);
 	}

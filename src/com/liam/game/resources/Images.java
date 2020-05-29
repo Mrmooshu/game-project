@@ -10,11 +10,13 @@ public class Images {
 	public static BufferedImage[] blocks;
 	public static BufferedImage[] playerSprites;
 	public static BufferedImage[] backgrounds;
+	public static BufferedImage[] icons;
 	
 	public Images() {
 		blocks = new BufferedImage[2];
 		playerSprites = new BufferedImage[6];
 		backgrounds = new BufferedImage[1];
+		icons = new BufferedImage[1];
 
 		try {
 			blocks[0] = ImageIO.read(getClass().getResourceAsStream("/Blocks/block_brick.png"));
@@ -26,6 +28,7 @@ public class Images {
 			playerSprites[4] = ImageIO.read(getClass().getResourceAsStream("/PlayerSprites/character fall right.png"));
 			playerSprites[5] = ImageIO.read(getClass().getResourceAsStream("/PlayerSprites/character fall left.png"));
 			backgrounds[0] = ImageIO.read(getClass().getResourceAsStream("/Blocks/background.png"));
+			icons[0] = ImageIO.read(getClass().getResourceAsStream("/Blocks/george.png"));
 
 			} catch (IOException e) {
 				e.printStackTrace();

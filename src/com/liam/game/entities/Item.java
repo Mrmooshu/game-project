@@ -7,6 +7,10 @@ public class Item {
 	private BufferedImage icon;
 	
 	public Item(BufferedImage icon) {
-		
+		this.icon = icon;
+	}
+	
+	public BufferedImage getIcon() {
+		return icon;
 	}
 }
