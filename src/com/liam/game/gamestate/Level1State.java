@@ -3,11 +3,11 @@ package com.liam.game.gamestate;
 import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.awt.image.BufferedImage;
+import java.util.LinkedList;
 
 import javax.imageio.ImageIO;
 
 import com.liam.game.entities.Enemy;
-import com.liam.game.entities.EnemyManager;
 import com.liam.game.entities.Inventory;
 import com.liam.game.entities.Item;
 import com.liam.game.entities.Player;
@@ -25,8 +25,9 @@ public class Level1State extends GameState {
 	private Player player;
 	private Map map;
 	private PlayerHUD playerHUD; 
-	private EnemyManager enemies;
+	private LinkedList<Enemy> enemies;
 	private Enemy joe;
+	public static int hitStopTimer = 0;
 	
 	public Level1State(GameStateManager gsm) {
 		super(gsm);
@@ -36,12 +37,12 @@ public class Level1State extends GameState {
 		itemInventory = new Inventory();
 		weaponInventory = new Inventory();
 		styleInventory = new Inventory();
-		player = new Player(30, 50);
+		player = new Player(35, 48);
 		map = new Map("/Maps/map1.map");
 		playerHUD = new PlayerHUD();
-		enemies = new EnemyManager();
-		joe = new Enemy(50, 50, 200, -20, 50);
-		enemies.addEnemy(joe);
+		enemies = new LinkedList<Enemy>();
+		joe = new Enemy(20, 20, 200, -20, 50);
+		enemies.add(joe);
 		for (int i = 0; i < 40; i++) {
 			itemInventory.addItem(new Item(Images.icons[0]));
 		}
@@ -57,13 +58,16 @@ public class Level1State extends GameState {
 	}
 
 	public void tick() {
-		player.tick(map.getBlocks(), map.getMovingBlocks(), enemies.getEnemies());
+		if (hitStopTimer > 0) {
+			hitStopTimer--;
+		}
+		player.tick(map.getBlocks(), map.getMovingBlocks(), enemies);
 		map.tick();
-		playerHUD.tick(player.getHealth());
-		for (int i = 0; i < enemies.getEnemies().size(); i++) {
-			enemies.getEnemies().get(i).tick(map.getBlocks(), map.getMovingBlocks());
-			if (enemies.getEnemies().get(i).getDie()) {
-				enemies.getEnemies().remove(i);
+		playerHUD.tick(player.health);
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies.get(i).tick(map.getBlocks(), map.getMovingBlocks());
+			if (enemies.get(i).getDie()) {
+				enemies.remove(i);
 			}
 		}
 	}
@@ -73,10 +77,9 @@ public class Level1State extends GameState {
 		player.draw(g);
 		map.draw(g);
 		playerHUD.draw(g);
-		for (int i = 0; i < enemies.getEnemies().size(); i++) {
-			enemies.getEnemies().get(i).draw(g);;
+		for (int i = 0; i < enemies.size(); i++) {
+			enemies.get(i).draw(g);;
 		}
-
 	}
 
 	public void keyPressed(int k) {

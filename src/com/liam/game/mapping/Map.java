@@ -15,9 +15,9 @@ public class Map {
 
 	private String path;
 	private String line;
-	private int width, height;
+	private int blockCount;
 	
-	private Block[][] blocks;
+	private Block[] blocks;
 	private ArrayList<MovingBlock> movingBlocks;
 	
 	public Map(String loadPath) {
@@ -27,9 +27,7 @@ public class Map {
 	
 	public void draw(Graphics g) {
 		for (int i = 0; i < blocks.length; i++) {
-			for (int j = 0; j < blocks[0].length; j++) {
-				blocks[i][j].draw(g);
-			}
+			blocks[i].draw(g);
 		}
 		
 		for (int i = 0; i < movingBlocks.size(); i++) {
@@ -48,16 +46,15 @@ public class Map {
 		InputStream is = this.getClass().getResourceAsStream(path);
 		BufferedReader br = new BufferedReader(new InputStreamReader(is));
 		try {
-			width = Integer.parseInt(br.readLine());//reads in width of block area
-			height = Integer.parseInt(br.readLine());//reads in height of block area
-			blocks = new Block[height][width];//stores block data
-			
-			for (int y = 0; y < height; y++) {
+			blockCount = Integer.parseInt(br.readLine());//reads in width of block area
+			blocks = new Block[blockCount];//stores block data
+			line = br.readLine();//skips a line
+
+			for (int i = 0; i < blockCount; i++) {
 				line = br.readLine();
-				String[] tokens = line.split(" ");
-				for (int x = 0; x < width; x++) {
-					blocks[y][x] = new Block(x * Block.blockSize, y * Block.blockSize, Integer.parseInt(tokens[x]));
-				}
+				String[] tokens = line.split(",");
+				blocks[i] = new Block(Integer.parseInt(tokens[0]), Integer.parseInt(tokens[1]),
+						Integer.parseInt(tokens[2]), Integer.parseInt(tokens[3]));
 			}
 			line = br.readLine();//skips a line
 			int length = Integer.parseInt(br.readLine());//stores the number of moving blocks
@@ -65,42 +62,11 @@ public class Map {
 			
 			for (int i = 0; i < length; i++) {
 				line = br.readLine();//reads moving block data
-				String[] tokens = line.split(" ");//splits moving block data
-				movingBlocks.add(new MovingBlock(Integer.parseInt(tokens[0]) * Block.blockSize,
-						Integer.parseInt(tokens[1]) * Block.blockSize, Integer.parseInt(tokens[2]),
-						Integer.parseInt(tokens[3]) * Block.blockSize, Integer.parseInt(tokens[4]) * Block.blockSize));
-			}
-		}
-		catch (NumberFormatException | IOException e) {
-			e.printStackTrace();
-		}
-	}
-	
-	public void loadMap(String map) {
-		StringReader sr = new StringReader(map);
-		BufferedReader br = new BufferedReader(sr);
-		try {
-			width = Integer.parseInt(br.readLine());//reads in width of block area
-			height = Integer.parseInt(br.readLine());//reads in height of block area
-			blocks = new Block[height][width];//stores block data
-			
-			for (int y = 0; y < height; y++) {
-				line = br.readLine();
-				String[] tokens = line.split(" ");
-				for (int x = 0; x < width; x++) {
-					blocks[y][x] = new Block(x * Block.blockSize, y * Block.blockSize, Integer.parseInt(tokens[x]));
-				}
-			}
-			line = br.readLine();//skips a line
-			int length = Integer.parseInt(br.readLine());//stores the number of moving blocks
-			movingBlocks = new ArrayList<MovingBlock>();
-			
-			for (int i = 0; i < length; i++) {
-				line = br.readLine();//reads moving block data
-				String[] tokens = line.split(" ");//splits moving block data
-				movingBlocks.add(new MovingBlock(Integer.parseInt(tokens[0]) * Block.blockSize,
-						Integer.parseInt(tokens[1]) * Block.blockSize, Integer.parseInt(tokens[2]),
-						Integer.parseInt(tokens[3]) * Block.blockSize, Integer.parseInt(tokens[4]) * Block.blockSize));
+				String[] tokens = line.split(",");//splits moving block data
+				movingBlocks.add(new MovingBlock(Integer.parseInt(tokens[0]),
+						Integer.parseInt(tokens[1]), Integer.parseInt(tokens[2]),
+						Integer.parseInt(tokens[3]), Integer.parseInt(tokens[4]),
+						Integer.parseInt(tokens[5])));
 			}
 		}
 		catch (NumberFormatException | IOException e) {
@@ -126,7 +92,7 @@ public class Map {
 		return "";
 	}
 	
-	public Block[][] getBlocks() {
+	public Block[] getBlocks() {
 			return blocks;
 	}
 	

@@ -18,8 +18,8 @@ public class HurtBox extends Rectangle{
 	}
 	
 	public void draw(Graphics g) {
-		g.setColor(Color.BLACK);
-		g.fillRect(x, y, width, height);
+		g.setColor(Color.RED);
+		g.drawRect(x, y, width, height);
 	}
 	
 	public boolean getActive() {
